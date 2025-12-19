@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 from pathlib import Path
-import numpy as np
 
 # ======================================================
 # KONFIGURASI HALAMAN
@@ -13,24 +10,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# Custom CSS untuk styling
-st.markdown("""
-<style>
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-        border-radius: 10px;
-        color: white;
-        text-align: center;
-    }
-    .stMetric {
-        background-color: #f0f2f6;
-        padding: 15px;
-        border-radius: 8px;
-    }
-</style>
-""", unsafe_allow_html=True)
 
 # ======================================================
 # JUDUL UTAMA
@@ -121,12 +100,6 @@ try:
     # ==================================================
     st.sidebar.header("⚙️ Pengaturan Dashboard")
     
-    # Tab mode di sidebar
-    analysis_mode = st.sidebar.radio(
-        "🎯 Mode Analisis:",
-        ["Overview", "Perbandingan Detail", "Analisis Volatilitas", "Prediksi Trend"]
-    )
-    
     # Filter tahun
     if not df["tahun_date"].empty:
         min_year = df["tahun_date"].min().year
@@ -151,18 +124,6 @@ try:
         "📊 Tampilkan Tabel Data",
         value=False
     )
-    
-    st.sidebar.divider()
-    st.sidebar.markdown("### 📥 Export Data")
-    
-    # Download button untuk filtered data
-    csv = df_filtered.to_csv(index=False).encode('utf-8')
-    st.sidebar.download_button(
-        label="⬇️ Download Data (CSV)",
-        data=csv,
-        file_name=f'data_pangan_{year_range[0]}_{year_range[1]}.csv',
-        mime='text/csv',
-    )
 
     if show_table:
         st.subheader("📋 Data Lengkap")
@@ -174,8 +135,12 @@ try:
         st.caption(f"Menampilkan **{len(df_filtered)}** baris data dari total **{len(df)}** baris.")
 
     # ==================================================
-    # DEFINISI KOMODITAS
+    # BAGIAN ANALISIS GRAFIK
     # ==================================================
+    st.divider()
+    st.header("📊 Analisis Harga Pangan Tahun 2019–2024 di Provinsi Banten")
+    st.markdown("Grafik berikut menunjukkan pergerakan harga komoditas pangan dari waktu ke waktu.")
+
     target_komoditas = [
         "Beras",
         "Daging Ayam",
@@ -197,381 +162,48 @@ try:
         st.info(f"Kolom yang tersedia: {', '.join(df_filtered.columns.tolist())}")
         st.stop()
 
-    # ==================================================
-    # MODE 1: OVERVIEW
-    # ==================================================
-    if analysis_mode == "Overview":
-        st.header("📊 Overview Harga Pangan")
+    # Multiselect dengan semua komoditas terpilih secara default
+    selected_commodities = st.multiselect(
+        "🔍 Pilih Komoditas untuk Ditampilkan:",
+        options=komoditas_plot,
+        default=komoditas_plot,
+        help="Pilih satu atau lebih komoditas untuk membandingkan harganya"
+    )
+
+    if selected_commodities:
+        # Buat chart data
+        chart_data = df_filtered.set_index("tahun_date")[selected_commodities]
         
-        # Metrics Cards
-        st.subheader("📈 Ringkasan Perubahan Harga")
+        # Hapus nilai NaN
+        chart_data = chart_data.dropna(how='all')
+
+        # Tampilkan grafik
+        st.subheader("📈 Dinamika Harga Komoditas Pangan")
+        st.line_chart(chart_data, height=500)
+
+        # Tampilkan statistik ringkas
+        st.subheader("📊 Statistik Harga (Periode Terpilih)")
         
-        cols = st.columns(len(komoditas_plot))
-        for idx, commodity in enumerate(komoditas_plot):
+        stats_data = []
+        for commodity in selected_commodities:
             data = df_filtered[commodity].dropna()
-            if len(data) >= 2:
-                first_price = data.iloc[0]
-                last_price = data.iloc[-1]
-                change = ((last_price - first_price) / first_price) * 100
-                
-                with cols[idx]:
-                    st.metric(
-                        label=commodity,
-                        value=f"Rp {last_price:,.0f}",
-                        delta=f"{change:+.1f}%"
-                    )
-        
-        st.divider()
-        
-        # Multi-select untuk grafik
-        selected_commodities = st.multiselect(
-            "🔍 Pilih Komoditas untuk Ditampilkan:",
-            options=komoditas_plot,
-            default=komoditas_plot[:3],
-            help="Pilih satu atau lebih komoditas untuk membandingkan harganya"
-        )
-
-        if selected_commodities:
-            # Grafik Interaktif dengan Plotly
-            fig = go.Figure()
-            
-            for commodity in selected_commodities:
-                fig.add_trace(go.Scatter(
-                    x=df_filtered["tahun_date"],
-                    y=df_filtered[commodity],
-                    mode='lines+markers',
-                    name=commodity,
-                    line=dict(width=2),
-                    marker=dict(size=6)
-                ))
-            
-            fig.update_layout(
-                title="Dinamika Harga Komoditas Pangan",
-                xaxis_title="Tahun",
-                yaxis_title="Harga (Rp)",
-                hovermode='x unified',
-                height=500,
-                template='plotly_white'
-            )
-            
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Statistik Ringkas
-            st.subheader("📊 Statistik Harga (Periode Terpilih)")
-            
-            stats_data = []
-            for commodity in selected_commodities:
-                data = df_filtered[commodity].dropna()
-                if not data.empty:
-                    stats_data.append({
-                        "Komoditas": commodity,
-                        "Rata-rata": f"Rp {data.mean():,.0f}",
-                        "Tertinggi": f"Rp {data.max():,.0f}",
-                        "Terendah": f"Rp {data.min():,.0f}",
-                        "Perubahan": f"{((data.iloc[-1] - data.iloc[0]) / data.iloc[0] * 100):.1f}%",
-                        "Std Dev": f"Rp {data.std():,.0f}"
-                    })
-            
-            if stats_data:
-                stats_df = pd.DataFrame(stats_data)
-                st.dataframe(stats_df, use_container_width=True, hide_index=True)
-
-    # ==================================================
-    # MODE 2: PERBANDINGAN DETAIL
-    # ==================================================
-    elif analysis_mode == "Perbandingan Detail":
-        st.header("🔄 Perbandingan Detail Komoditas")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            commodity1 = st.selectbox(
-                "Pilih Komoditas 1:",
-                options=komoditas_plot,
-                index=0
-            )
-        
-        with col2:
-            commodity2 = st.selectbox(
-                "Pilih Komoditas 2:",
-                options=komoditas_plot,
-                index=min(1, len(komoditas_plot)-1)
-            )
-        
-        # Grafik Perbandingan Side by Side
-        col_a, col_b = st.columns(2)
-        
-        with col_a:
-            st.subheader(f"📊 {commodity1}")
-            data1 = df_filtered[["tahun_date", commodity1]].dropna()
-            
-            fig1 = px.area(
-                data1,
-                x="tahun_date",
-                y=commodity1,
-                title=f"Trend Harga {commodity1}",
-                labels={"tahun_date": "Tahun", commodity1: "Harga (Rp)"}
-            )
-            st.plotly_chart(fig1, use_container_width=True)
-            
-            # Stats commodity 1
-            if not data1.empty:
-                avg1 = data1[commodity1].mean()
-                max1 = data1[commodity1].max()
-                min1 = data1[commodity1].min()
-                
-                st.metric("Rata-rata", f"Rp {avg1:,.0f}")
-                st.metric("Tertinggi", f"Rp {max1:,.0f}")
-                st.metric("Terendah", f"Rp {min1:,.0f}")
-        
-        with col_b:
-            st.subheader(f"📊 {commodity2}")
-            data2 = df_filtered[["tahun_date", commodity2]].dropna()
-            
-            fig2 = px.area(
-                data2,
-                x="tahun_date",
-                y=commodity2,
-                title=f"Trend Harga {commodity2}",
-                labels={"tahun_date": "Tahun", commodity2: "Harga (Rp)"}
-            )
-            st.plotly_chart(fig2, use_container_width=True)
-            
-            # Stats commodity 2
-            if not data2.empty:
-                avg2 = data2[commodity2].mean()
-                max2 = data2[commodity2].max()
-                min2 = data2[commodity2].min()
-                
-                st.metric("Rata-rata", f"Rp {avg2:,.0f}")
-                st.metric("Tertinggi", f"Rp {max2:,.0f}")
-                st.metric("Terendah", f"Rp {min2:,.0f}")
-        
-        # Korelasi
-        st.divider()
-        st.subheader("🔗 Analisis Korelasi")
-        
-        if not data1.empty and not data2.empty:
-            # Merge data untuk korelasi
-            merged = pd.merge(data1, data2, on="tahun_date")
-            
-            if len(merged) > 1:
-                correlation = merged[commodity1].corr(merged[commodity2])
-                
-                col_x, col_y, col_z = st.columns(3)
-                with col_y:
-                    st.metric(
-                        "Korelasi Harga",
-                        f"{correlation:.3f}",
-                        help="Nilai mendekati 1: korelasi positif kuat, -1: korelasi negatif kuat, 0: tidak ada korelasi"
-                    )
-                
-                # Scatter plot
-                fig_scatter = px.scatter(
-                    merged,
-                    x=commodity1,
-                    y=commodity2,
-                    trendline="ols",
-                    title=f"Hubungan Harga {commodity1} vs {commodity2}",
-                    labels={commodity1: f"Harga {commodity1}", commodity2: f"Harga {commodity2}"}
-                )
-                st.plotly_chart(fig_scatter, use_container_width=True)
-
-    # ==================================================
-    # MODE 3: ANALISIS VOLATILITAS
-    # ==================================================
-    elif analysis_mode == "Analisis Volatilitas":
-        st.header("📉 Analisis Volatilitas Harga")
-        
-        st.markdown("""
-        Volatilitas mengukur seberapa besar fluktuasi harga suatu komoditas. 
-        Volatilitas tinggi menunjukkan harga yang tidak stabil.
-        """)
-        
-        # Hitung volatilitas (standar deviasi)
-        volatility_data = []
-        
-        for commodity in komoditas_plot:
-            data = df_filtered[commodity].dropna()
-            if len(data) > 1:
-                volatility = data.std()
-                mean_price = data.mean()
-                cv = (volatility / mean_price) * 100  # Coefficient of Variation
-                
-                volatility_data.append({
+            if not data.empty:
+                stats_data.append({
                     "Komoditas": commodity,
-                    "Volatilitas (Std Dev)": volatility,
-                    "Harga Rata-rata": mean_price,
-                    "Koefisien Variasi (%)": cv
+                    "Harga Rata-rata": f"Rp {data.mean():,.0f}",
+                    "Harga Tertinggi": f"Rp {data.max():,.0f}",
+                    "Harga Terendah": f"Rp {data.min():,.0f}",
+                    "Perubahan (%)": f"{((data.iloc[-1] - data.iloc[0]) / data.iloc[0] * 100):.1f}%"
                 })
         
-        vol_df = pd.DataFrame(volatility_data)
-        vol_df = vol_df.sort_values("Koefisien Variasi (%)", ascending=False)
-        
-        # Bar chart volatilitas
-        fig_vol = px.bar(
-            vol_df,
-            x="Komoditas",
-            y="Koefisien Variasi (%)",
-            title="Tingkat Volatilitas Komoditas (Koefisien Variasi)",
-            color="Koefisien Variasi (%)",
-            color_continuous_scale="Reds"
-        )
-        st.plotly_chart(fig_vol, use_container_width=True)
-        
-        # Tabel volatilitas
-        st.subheader("📊 Detail Volatilitas")
-        
-        display_vol = vol_df.copy()
-        display_vol["Volatilitas (Std Dev)"] = display_vol["Volatilitas (Std Dev)"].apply(lambda x: f"Rp {x:,.0f}")
-        display_vol["Harga Rata-rata"] = display_vol["Harga Rata-rata"].apply(lambda x: f"Rp {x:,.0f}")
-        display_vol["Koefisien Variasi (%)"] = display_vol["Koefisien Variasi (%)"].apply(lambda x: f"{x:.2f}%")
-        
-        st.dataframe(display_vol, use_container_width=True, hide_index=True)
-        
-        # Interpretasi
-        st.info("""
-        **💡 Interpretasi:**
-        - **Koefisien Variasi < 15%**: Volatilitas Rendah (Harga Stabil)
-        - **Koefisien Variasi 15-30%**: Volatilitas Sedang
-        - **Koefisien Variasi > 30%**: Volatilitas Tinggi (Harga Tidak Stabil)
-        """)
-        
-        # Grafik pergerakan harian/perubahan
+        if stats_data:
+            stats_df = pd.DataFrame(stats_data)
+            st.dataframe(stats_df, use_container_width=True, hide_index=True)
+
+        # ==================================================
+        # PENJELASAN ANALISIS
+        # ==================================================
         st.divider()
-        st.subheader("📈 Perubahan Harga dari Waktu ke Waktu")
-        
-        commodity_vol = st.selectbox(
-            "Pilih komoditas untuk melihat perubahan harga:",
-            options=komoditas_plot
-        )
-        
-        data_vol = df_filtered[["tahun_date", commodity_vol]].dropna()
-        data_vol["Perubahan (%)"] = data_vol[commodity_vol].pct_change() * 100
-        
-        fig_change = go.Figure()
-        
-        fig_change.add_trace(go.Bar(
-            x=data_vol["tahun_date"],
-            y=data_vol["Perubahan (%)"],
-            name="Perubahan Harga",
-            marker_color=np.where(data_vol["Perubahan (%)"] >= 0, 'green', 'red')
-        ))
-        
-        fig_change.update_layout(
-            title=f"Persentase Perubahan Harga {commodity_vol}",
-            xaxis_title="Tahun",
-            yaxis_title="Perubahan (%)",
-            height=400
-        )
-        
-        st.plotly_chart(fig_change, use_container_width=True)
-
-    # ==================================================
-    # MODE 4: PREDIKSI TREND
-    # ==================================================
-    elif analysis_mode == "Prediksi Trend":
-        st.header("🔮 Analisis dan Prediksi Trend")
-        
-        st.warning("⚠️ Prediksi ini menggunakan metode sederhana (moving average) dan hanya untuk ilustrasi. Bukan rekomendasi investasi.")
-        
-        commodity_pred = st.selectbox(
-            "Pilih komoditas untuk analisis trend:",
-            options=komoditas_plot
-        )
-        
-        data_pred = df_filtered[["tahun_date", commodity_pred]].dropna()
-        
-        if len(data_pred) >= 3:
-            # Hitung moving averages
-            data_pred["MA_3"] = data_pred[commodity_pred].rolling(window=3).mean()
-            data_pred["MA_6"] = data_pred[commodity_pred].rolling(window=min(6, len(data_pred))).mean()
-            
-            # Grafik dengan moving averages
-            fig_pred = go.Figure()
-            
-            fig_pred.add_trace(go.Scatter(
-                x=data_pred["tahun_date"],
-                y=data_pred[commodity_pred],
-                mode='lines+markers',
-                name='Harga Aktual',
-                line=dict(color='blue', width=2)
-            ))
-            
-            fig_pred.add_trace(go.Scatter(
-                x=data_pred["tahun_date"],
-                y=data_pred["MA_3"],
-                mode='lines',
-                name='Moving Average 3',
-                line=dict(color='orange', width=2, dash='dash')
-            ))
-            
-            fig_pred.add_trace(go.Scatter(
-                x=data_pred["tahun_date"],
-                y=data_pred["MA_6"],
-                mode='lines',
-                name='Moving Average 6',
-                line=dict(color='red', width=2, dash='dot')
-            ))
-            
-            fig_pred.update_layout(
-                title=f"Trend Harga {commodity_pred} dengan Moving Average",
-                xaxis_title="Tahun",
-                yaxis_title="Harga (Rp)",
-                height=500,
-                hovermode='x unified'
-            )
-            
-            st.plotly_chart(fig_pred, use_container_width=True)
-            
-            # Analisis trend
-            st.subheader("📊 Analisis Trend")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            # Trend direction
-            recent_data = data_pred[commodity_pred].tail(6)
-            if len(recent_data) >= 2:
-                trend_direction = "Naik" if recent_data.iloc[-1] > recent_data.iloc[0] else "Turun"
-                trend_pct = ((recent_data.iloc[-1] - recent_data.iloc[0]) / recent_data.iloc[0]) * 100
-                
-                with col1:
-                    st.metric(
-                        "Trend 6 Periode Terakhir",
-                        trend_direction,
-                        f"{trend_pct:+.1f}%"
-                    )
-                
-                with col2:
-                    current_price = data_pred[commodity_pred].iloc[-1]
-                    ma3_current = data_pred["MA_3"].iloc[-1]
-                    
-                    signal = "Bullish" if current_price > ma3_current else "Bearish"
-                    st.metric("Sinyal Pasar", signal)
-                
-                with col3:
-                    volatility = recent_data.std()
-                    st.metric("Volatilitas 6 Periode", f"Rp {volatility:,.0f}")
-            
-            # Insight otomatis
-            st.divider()
-            st.subheader("💡 Insight Otomatis")
-            
-            avg_price = data_pred[commodity_pred].mean()
-            current_price = data_pred[commodity_pred].iloc[-1]
-            
-            if current_price > avg_price * 1.1:
-                st.error(f"🔴 Harga {commodity_pred} saat ini **{((current_price/avg_price - 1) * 100):.1f}% lebih tinggi** dari rata-rata historis. Harga sedang tinggi.")
-            elif current_price < avg_price * 0.9:
-                st.success(f"🟢 Harga {commodity_pred} saat ini **{((1 - current_price/avg_price) * 100):.1f}% lebih rendah** dari rata-rata historis. Harga sedang rendah.")
-            else:
-                st.info(f"🟡 Harga {commodity_pred} saat ini berada pada level **normal** sekitar rata-rata historis.")
-
-    # ==================================================
-    # PENJELASAN ANALISIS (Di bawah semua mode)
-    # ==================================================
-    st.divider()
-    with st.expander("📖 Lihat Analisis Lengkap Perkembangan Harga", expanded=False):
         st.markdown("""
 ### 📊 Analisis Perkembangan Harga Komoditas Pangan Utama di Provinsi Banten (2019–2024)
 
@@ -622,6 +254,9 @@ dari tahun ke tahun. Meskipun tingkat fluktuasi berbeda antar komoditas, tren ke
 menunjukkan pentingnya kebijakan stabilisasi harga dan penguatan ketahanan pangan daerah guna 
 menjaga daya beli masyarakat.
 """)
+
+    else:
+        st.warning("⚠️ Silakan pilih setidaknya satu komoditas untuk menampilkan grafik.")
 
 except FileNotFoundError:
     st.error(f"❌ File '{file_path}' tidak ditemukan!")
