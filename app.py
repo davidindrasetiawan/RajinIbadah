@@ -114,55 +114,49 @@ try:
             # ==================================================
             # PENJELASAN (VERSI BARU – LENGKAP)
             # ==================================================
-            st.subheader("Penjelasan Analisis Harga Komoditas")
+            
+            st.markdown("""
+### 📊 Analisis Perkembangan Harga Komoditas Pangan Utama di Provinsi Banten (2019–2024)
 
-st.markdown("""
-**Beras**  
-Selama periode 2019 hingga 2022, harga beras di Provinsi Banten relatif stabil dan berada pada 
-kisaran yang aman. Namun, memasuki tahun 2023 hingga 2024 terlihat adanya tren kenaikan harga 
-yang cukup konsisten. Kondisi ini mengindikasikan meningkatnya tekanan inflasi serta kemungkinan 
-adanya gangguan pada sisi produksi dan distribusi, sehingga harga beras menjadi lebih mahal 
-dibandingkan tahun-tahun sebelumnya.
+**Beras** menunjukkan kondisi harga yang relatif stabil pada periode 2019 hingga 2022. 
+Stabilitas ini mencerminkan peran pemerintah dalam menjaga ketersediaan stok dan stabilisasi 
+harga. Namun, pada periode 2023 hingga 2024 terlihat tren kenaikan harga yang cukup signifikan, 
+yang mengindikasikan adanya tekanan inflasi, peningkatan biaya produksi, serta gangguan iklim 
+yang memengaruhi hasil panen.
 
-**Cabai Rawit**  
-Cabai rawit merupakan komoditas dengan tingkat volatilitas harga yang paling tinggi. Pergerakan 
-harga cabai rawit sangat dipengaruhi oleh faktor cuaca, musim tanam, dan masa panen. Akibatnya, 
-harga cabai rawit dapat mengalami kenaikan maupun penurunan yang tajam dalam waktu yang relatif 
-singkat, bahkan dalam hitungan minggu atau hari.
+**Cabai Rawit** merupakan komoditas dengan tingkat volatilitas harga yang tinggi. Fluktuasi 
+harga yang tajam dari waktu ke waktu dipengaruhi oleh faktor cuaca, musim panen, serta 
+keterbatasan pasokan. Kondisi ini menyebabkan harga cabai rawit dapat berubah secara cepat, 
+baik dalam skala bulanan maupun harian.
 
-**Daging Ayam**  
-Harga daging ayam cenderung menunjukkan kondisi yang relatif stabil sepanjang periode pengamatan. 
-Meskipun terjadi fluktuasi naik dan turun, perubahan harga tersebut tidak terlalu ekstrem. Hal ini 
-menunjukkan bahwa pasokan daging ayam relatif mampu menyesuaikan dengan tingkat permintaan pasar.
+**Daging Ayam** menunjukkan pergerakan harga yang relatif moderat. Meskipun terjadi fluktuasi 
+kenaikan dan penurunan harga, perubahannya tidak terlalu ekstrem. Hal ini disebabkan oleh 
+siklus produksi yang relatif cepat serta kemampuan pasokan untuk menyesuaikan dengan permintaan.
 
-**Minyak Goreng**  
-Secara umum, harga minyak goreng terlihat stabil dari tahun ke tahun. Namun, pada tahun 2022 
-terjadi lonjakan harga yang cukup signifikan. Kenaikan ini berkaitan dengan dampak pasca pandemi 
-COVID-19, gangguan rantai pasok global, serta meningkatnya harga bahan baku di pasar internasional.
+**Minyak Goreng** cenderung memiliki harga yang stabil dalam jangka panjang. Namun, pada tahun 
+2022 terjadi lonjakan harga yang cukup tajam. Kenaikan tersebut berkaitan dengan dampak pasca 
+pandemi COVID-19, gangguan rantai pasok global, serta meningkatnya harga bahan baku.
 
-**Bawang Merah**  
-Pergerakan harga bawang merah memiliki pola yang hampir serupa dengan cabai rawit. Harga sangat 
-dipengaruhi oleh kondisi cuaca, musim tanam, dan hasil panen. Ketika produksi menurun, harga 
-cenderung meningkat, sedangkan saat pasokan melimpah, harga kembali menurun.
+**Bawang Merah** memiliki pola pergerakan harga yang hampir serupa dengan cabai rawit. Harga 
+bawang merah sangat dipengaruhi oleh musim tanam, kondisi cuaca, dan hasil panen. Ketika 
+pasokan terganggu, harga cenderung meningkat, dan sebaliknya akan menurun saat produksi melimpah.
 
-**Gula Pasir**  
-Harga gula pasir menunjukkan kecenderungan meningkat secara perlahan dan relatif konsisten setiap 
-tahunnya. Pola ini mencerminkan adanya tekanan biaya produksi, ketergantungan terhadap impor, 
-serta peningkatan permintaan masyarakat dari waktu ke waktu.
+**Gula Pasir** menunjukkan tren kenaikan harga yang bersifat gradual dan relatif konsisten dari 
+tahun ke tahun. Pola ini mencerminkan tekanan biaya produksi, ketergantungan terhadap impor, 
+serta peningkatan permintaan masyarakat.
 
-**Daging Sapi**  
-Daging sapi merupakan komoditas dengan tingkat harga yang relatif tinggi dan cenderung sulit 
-mengalami penurunan. Pada tahun 2022 terjadi kenaikan harga yang cukup tajam, yang diduga 
-disebabkan oleh tingginya permintaan serta keterbatasan pasokan. Meskipun sempat mengalami 
-penyesuaian, harga daging sapi tetap berada pada level yang lebih tinggi dibandingkan sebelum 
-pandemi.
+**Daging Sapi** merupakan komoditas dengan tingkat harga yang tinggi dan relatif sulit mengalami 
+penurunan. Pada tahun 2022 terjadi lonjakan harga yang cukup drastis akibat meningkatnya permintaan 
+pasca pandemi serta keterbatasan pasokan. Meskipun sempat menurun, harga daging sapi tetap berada 
+pada level yang lebih tinggi dibandingkan periode sebelum pandemi.
 
 **Kesimpulan**  
-Secara keseluruhan, harga komoditas pangan utama di Provinsi Banten menunjukkan tren kenaikan 
-dalam jangka panjang dengan tingkat fluktuasi yang berbeda-beda. Kondisi ini menegaskan pentingnya 
-peran pemerintah dalam menjaga stabilitas harga dan memperkuat ketahanan pangan daerah guna 
-melindungi daya beli masyarakat.
+Secara keseluruhan, harga komoditas pangan utama di Provinsi Banten cenderung mengalami peningkatan 
+dari tahun ke tahun. Meskipun tingkat fluktuasi berbeda antar komoditas, tren kenaikan ini 
+menunjukkan pentingnya kebijakan stabilisasi harga dan penguatan ketahanan pangan daerah guna 
+menjaga daya beli masyarakat.
 """)
+
 
         else:
             st.warning("Silakan pilih setidaknya satu komoditas untuk menampilkan grafik.")
