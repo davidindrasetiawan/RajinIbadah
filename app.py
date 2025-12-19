@@ -6,12 +6,30 @@ import pandas as pd
 st.set_page_config(page_title="Dashboard Harga Pangan Banten", layout="wide")
 
 # Judul Utama
+<<<<<<< HEAD
 st.title(' Dashboard Harga Komoditas Pangan Utama di Banten')
+=======
+st.title('Dashboard Harga Komoditas Pangan Utama di Banten')
+
+>>>>>>> 71abceb8bc2d88a8bfab0b6d408358bba32dfd0e
 st.markdown("""
 Dashboard ini menyajikan analisis perkembangan harga pangan strategis di wilayah Banten.
 Data ini diambil dari laporan bulanan dan divisualisasikan untuk membantu memantau tren kenaikan atau penurunan harga.
 """)
 
+<<<<<<< HEAD
+=======
+st.markdown("<h3 class='anggota-title'>Anggota Kelompok:</h3>", unsafe_allow_html=True)
+
+anggota = [
+    "Jibral Yusuf Nazar (021002301001)",
+    "David Indra Setiawan (021002305021)",
+    "Dimas Wahyu Saputra (021002302003)"
+]
+
+    
+
+>>>>>>> 71abceb8bc2d88a8bfab0b6d408358bba32dfd0e
 # Load data CSV (Bukan Excel lagi)
 file_path = 'data_bengkulu.csv'
 
